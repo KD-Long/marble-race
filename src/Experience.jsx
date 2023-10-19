@@ -4,7 +4,6 @@ import Lights from './Lights.jsx'
 export default function Experience()
 {
     return <>
-
         <OrbitControls makeDefault />
 
         <Lights />
