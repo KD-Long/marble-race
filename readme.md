@@ -3,7 +3,7 @@
 This project was built in the progress of the [Three.js journey](https://threejs-journey.com) course, focusing on R3F and react-three-rapier.
 <br>
 
-![marble-race-image](./public/marble-race-image.png)
+![marble-race-image](./public/marble-race.png)
 
 
 

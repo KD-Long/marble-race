@@ -313,12 +313,6 @@ export function Level({ count = 5, blockTypes = [TrapSpinner, TrapLimbo, TrapAxe
 
         <Bounds length={count + 2} />
 
-        {/* <TrapSpinner position={[0, 0, 8]} />
-        <TrapSpinner position={[0, 0, 4]} />
-        <TrapSpinner position={[0, 0, 0]} /> */}
-        {/* <TrapLimbo position={[0, 0, 8]} /> */}
-        {/* <TrapAxe position={[0, 0, 4]} /> */}
-        {/* <BlockEnd position={[0, 0, 0]} /> */}
 
 
 
