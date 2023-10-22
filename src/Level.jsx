@@ -2,7 +2,7 @@ import { RigidBody, CuboidCollider } from '@react-three/rapier'
 import * as THREE from 'three'
 import { useFrame } from '@react-three/fiber'
 import { useState, useRef, useMemo } from 'react'
-import { useGLTF } from '@react-three/drei'
+import { useGLTF, Float, Text } from '@react-three/drei'
 
 //optimisation to have just on box geometry for all box objects and just scale it for different uses
 const boxGeometry = new THREE.BoxGeometry(1, 1, 1)
@@ -40,6 +40,23 @@ export function BlockStart({ position = [0, 0, 0] }) {
         {/* Floor */}
         <group position={position}>
             <Floor material={floor1Material} />
+            <Float
+                floatIntensity={0.25}
+                rotationIntensity={0.25}
+            >
+                <Text
+                    font='/bebas-neue-v9-latin-regular.woff'
+                    scale={0.5}
+                    maxWidth={0.25}
+                    lineHeight={0.75}
+                    textAlign='right'
+                    position={[0.75, 0.65, 0]}
+                    rotation-y={-0.25}
+                >
+                    Marble Race
+                    <meshBasicMaterial toneMapped={false} />
+                </Text>
+            </Float>
         </group>
     </>
 }
@@ -57,6 +74,16 @@ export function BlockEnd({ position = [0, 0, 0] }) {
     return <>
         {/* Floor */}
         <group position={[position[0], position[1] + 0.1, position[2],]}>
+            <Text
+                font='/bebas-neue-v9-latin-regular.woff'
+                scale={1}
+                position={[0,1.25,2]}
+            >
+                FINISH
+                <meshBasicMaterial toneMapped={false} />
+            </Text>
+
+
             <Floor material={floor1Material} />
 
             <RigidBody
@@ -256,7 +283,7 @@ export function Bounds({ length = 1 }) {
 
 }
 
-export function Level({ count = 5, blockTypes = [TrapSpinner, TrapLimbo, TrapAxe] }) {
+export function Level({ count = 5, blockTypes = [TrapSpinner, TrapLimbo, TrapAxe], blockSeed = 0 }) {
     // defaults from props
     // const count =5
     // const blockTypes = [TrapSpinner,TrapLimbo,TrapAxe]
@@ -271,7 +298,7 @@ export function Level({ count = 5, blockTypes = [TrapSpinner, TrapLimbo, TrapAxe
         }
         return myBlocks
 
-    }, [count, blockTypes])
+    }, [count, blockTypes, blockSeed])
 
 
 

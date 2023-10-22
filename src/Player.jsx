@@ -1,30 +1,47 @@
 import { RigidBody, useRapier } from "@react-three/rapier";
 import { useFrame } from '@react-three/fiber'
 import { useKeyboardControls } from '@react-three/drei'
-import { useRef, useEffect,useState } from "react";
+import { useRef, useEffect, useState } from "react";
 import * as THREE from 'three'
+import useGame from './stores/useGame.jsx'
 
 
 export default function Player() {
     const playerRef = useRef()
     const [subscribeKey, getKeys] = useKeyboardControls()
-    const {rapier, world} = useRapier()
-    const [smoothCameraPosition] = useState(()=>{return new THREE.Vector3(200,200,200)})
-    const [smoothCameraTarget] = useState(()=>{return new THREE.Vector3()})
+    const { rapier, world } = useRapier()
+    const [smoothCameraPosition] = useState(() => { return new THREE.Vector3(200, 200, 200) })
+    const [smoothCameraTarget] = useState(() => { return new THREE.Vector3() })
 
+    //phase logic
+    const start = useGame((state) => { return state.start })
+    const end = useGame((state) => { return state.end })
+    const blocksCount = useGame((state) => { return state.blocksCount })
+    const restart = useGame((state) => { return state.restart })
+
+    /**
+     * reset for player when phase changes to ready (fall off level)
+     */
+    const reset = () => {
+        // console.log('reset')
+        playerRef.current.setTranslation({x:0,y:1,z:0})
+        playerRef.current.setLinvel({x:0,y:0,z:0})
+        playerRef.current.setAngvel({x:0,y:0,z:0})
+
+    }
 
     const jump = () => {
         // we need to raycast to check if ball is close to ground and if it is allowed to jump
         const origin = playerRef.current.translation()
         origin.y -= 0.31 // radius of ball + 0.1 buffer
-        const direction = {x:0,y:-1,z:0}
+        const direction = { x: 0, y: -1, z: 0 }
 
-        const ray = new rapier.Ray(origin,direction)
-        const hit = world.castRay(ray,10,true)
+        const ray = new rapier.Ray(origin, direction)
+        const hit = world.castRay(ray, 10, true)
 
         // toi is timoe of impact but its actually distance
-        if(hit.toi<0.15)
-            playerRef.current.applyImpulse({x:0,y:0.5,z:0})
+        if (hit.toi < 0.15)
+            playerRef.current.applyImpulse({ x: 0, y: 0.5, z: 0 })
     }
     // one time call when component is rendered (no dependencies)
     useEffect(() => {
@@ -41,12 +58,40 @@ export default function Player() {
                     jump()
             })
 
+        /**
+         * Phase logic
+         */
+        // this logic is for setting global state store phase --> playing when player presses any key
+        const unsubAny = subscribeKey(
+            () => {
+                start()
+            }
+        )
+
+        // Logic for reset phase event (not the test)
+        // subscribing to changes to phase. This should only be called when phase changes
+        // So not called untill ball is moved by player
+        // when phase changes to 'ready' we know that ball has fallen off level
+        // then execute reset() to reset player
+        const unsubReset = useGame.subscribe(
+            (state)=>{return state.phase},
+            (phase)=>{
+                // console.log('phase changed to: ',phase)
+                if(phase === 'ready')
+                    reset()
+            }
+            )
+
+
+
         // cleanup when //player gets modified hot module replacment (prevents subscribed key functions being called twice)
-        return ()=>{
+        return () => {
             unsub()
+            unsubAny()
+            unsubReset()
         }
 
-        
+
     }, [])
 
     useFrame((state, delta) => {
@@ -102,11 +147,22 @@ export default function Player() {
 
         // using lerp to make a smoother camera transition (not jerky)
 
-        smoothCameraPosition.lerp(cameraPosition,7* delta)
-        smoothCameraTarget.lerp(cameraTarget,7*delta)
+        smoothCameraPosition.lerp(cameraPosition, 7 * delta)
+        smoothCameraTarget.lerp(cameraTarget, 7 * delta)
 
         state.camera.position.copy(smoothCameraPosition)
         state.camera.lookAt(smoothCameraTarget)
+
+        /**
+         * Phase logic END test
+         */
+
+        if (bodyPosition.z < -(blocksCount * 4 + 2)) {
+            end()
+        }
+        // fall off board test --> restart
+        if (bodyPosition.y < -4)
+            restart()
 
 
     })
